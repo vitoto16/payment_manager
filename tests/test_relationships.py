@@ -3,7 +3,7 @@ from unittest import TestCase
 
 # Local imports
 from payment_manager.api.api import app, db
-from payment_manager.api.models import Client, Buyer, Card, Payment, buyers, cards
+from payment_manager.api.models import Client, Buyer, Card, Payment
 
 
 class TestRelationships(TestCase):
@@ -56,3 +56,21 @@ class TestRelationships(TestCase):
 
         self.assertEqual(1, payment.client.id)
         self.assertEqual('Vittor', payment.buyer.name)
+
+    def test_payment_and_card_relationship(self):
+        client = Client.query.first()
+
+        db.session.add(Buyer(name='Vittor', email='vittorvc@gmail.com', cpf='12345678910'))
+        db.session.commit()
+        buyer = Buyer.query.first()
+
+        db.session.add(Card(owner_name='Vittor', number='1234567891011121', exp_date='69/69', cvv='420'))
+        db.session.commit()
+        card = Card.query.first()
+
+        db.session.add(Payment(amount=1200.00, pay_type='Card', client_id=client.id, buyer_id=buyer.id, card=card))
+        db.session.commit()
+        payment = Payment.query.first()
+
+        self.assertEqual(1, payment.card_id, "O ID do cartão está incorreto!")
+        self.assertEqual(1, card.payments[0].id, "O ID do pagamento está incorreto!")
