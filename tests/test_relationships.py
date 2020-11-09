@@ -11,7 +11,8 @@ class TestRelationships(TestCase):
         """
         Creates a memory database for unit testing
         """
-        app.config.from_object('payment_manager.config.Testing')
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         db.create_all()
         db.session.add(Client())
         db.session.commit()
