@@ -23,8 +23,7 @@ def save_new_payment(data):
     # If the client is in de database, process the request. If not, raise ValueError.
     client = Client.query.get(data['client_id'])
     if client:
-        payment = Payment(amount=data['payment_amount'], pay_type=data['payment_type'],
-                          client_id=client.id)
+        payment = Payment(amount=data['payment_amount'], pay_type=data['payment_type'])
 
         # If buyer is not in the database, create an object for further insertion
         buyer = Buyer.query.filter_by(cpf=data['buyer_cpf']).first()
