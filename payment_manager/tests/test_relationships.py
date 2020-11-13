@@ -1,18 +1,18 @@
 # Test library import
-from unittest import TestCase
+import unittest
+from flask_testing import TestCase
 
 # Local imports
-from payment_manager.api.api import app, db
+from manage import app, db
 from payment_manager.api.models import Client, Buyer, Card, Payment
 
 
 class TestRelationships(TestCase):
+    def create_app(self):
+        app.config.from_object('payment_manager.api.config.TestingConfig')
+        return app
+
     def setUp(self):
-        """
-        Creates a memory database for unit testing
-        """
-        app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
         db.create_all()
         db.session.add(Client())
         db.session.commit()
@@ -75,3 +75,7 @@ class TestRelationships(TestCase):
 
         self.assertEqual(1, payment.card_id, "O ID do cartão está incorreto!")
         self.assertEqual(1, card.payments[0].id, "O ID do pagamento está incorreto!")
+
+
+if __name__ == '__main__':
+    unittest.main()

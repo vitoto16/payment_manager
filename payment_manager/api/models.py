@@ -1,4 +1,4 @@
-from .api import db
+from . import db
 
 buyers = db.Table('buyers',
                   db.Column('client_id', db.Integer, db.ForeignKey('client.id'), primary_key=True),
