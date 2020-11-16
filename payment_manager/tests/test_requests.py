@@ -20,6 +20,7 @@ class TestRequests(TestCase):
                                 "buyer_cpf=12345678910&payment_amount=1200&"
         db.create_all()
         db.session.add(Client())
+        db.session.commit()
 
     def tearDown(self):
         db.session.close()

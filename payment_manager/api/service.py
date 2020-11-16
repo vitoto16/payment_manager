@@ -20,43 +20,44 @@ parser.add_argument('card_cvv')
 
 
 def save_new_payment(data):
-    # If the client is in de database, process the request. If not, raise ValueError.
+    # If the client is in de database, process the request. If not, return fail response.
     client = Client.query.get(data['client_id'])
     if client:
-        payment = Payment(amount=data['payment_amount'], pay_type=data['payment_type'])
+        with db.session.no_autoflush:
+            payment = Payment(amount=data['payment_amount'], pay_type=data['payment_type'])
 
-        # If buyer is not in the database, create an object for further insertion
-        buyer = Buyer.query.filter_by(cpf=data['buyer_cpf']).first()
-        if not buyer:
-            buyer = Buyer(name=data['buyer_name'], email=data['buyer_email'],
-                          cpf=data['buyer_cpf'])
+            # If buyer is not in the database, create an object for further insertion
+            buyer = Buyer.query.filter_by(cpf=data['buyer_cpf']).first()
+            if not buyer:
+                buyer = Buyer(name=data['buyer_name'], email=data['buyer_email'],
+                              cpf=data['buyer_cpf'])
 
-        # Establishes relationship with current client
-        buyer.clients.append(client)
-        buyer.payments.append(payment)
-        db.session.add(buyer)
+            # Establishes relationship with current client
+            buyer.clients.append(client)
+            buyer.payments.append(payment)
+            db.session.add(buyer)
 
-        # If the payment type is card and some card data is not present in the request, raise MissingCardArgs exception.
-        # If all the data is present, process request.
-        if data.get('payment_type') == 'card':
-            missing_args = check_card_data(data)
-            if missing_args:
-                raise MissingCardArgs(f"The argument {missing_args} are required for this request.",
-                                      status_code=400)
-            else:
-                # If card is not in the database, create an object for further insertion
-                card = Card.query.filter_by(number=data['card_number']).first()
-                if not card:
-                    card = Card(owner_name=data['card_holder_name'], number=data['card_number'],
-                                exp_date=data['card_exp_date'], cvv=data['card_cvv'])
+            """If the payment type is card and some card data is not present in the request,raise MissingCardArgs
+            exception. If all the data is present, process request."""
+            if data.get('payment_type') == 'card':
+                missing_args = check_card_data(data)
+                if missing_args:
+                    raise MissingCardArgs(f"The argument {missing_args} are required for this request.",
+                                          status_code=400)
+                else:
+                    # If card is not in the database, create an object for further insertion
+                    card = Card.query.filter_by(number=data['card_number']).first()
+                    if not card:
+                        card = Card(owner_name=data['card_holder_name'], number=data['card_number'],
+                                    exp_date=data['card_exp_date'], cvv=data['card_cvv'])
 
-            card.buyers.append(buyer)
-            card.payments.append(payment)
-            db.session.add(card)
+                card.buyers.append(buyer)
+                card.payments.append(payment)
+                db.session.add(card)
 
-        payment.client_id = client.id
-        db.session.add(payment)
-        db.session.commit()
+            payment.client_id = client.id
+            db.session.add(payment)
+            db.session.commit()
 
         if payment.pay_type == 'card':
             response_object = {

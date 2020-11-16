@@ -7,7 +7,7 @@ from flask_restx import Resource
 # Local imports
 from .service import parser, save_new_payment
 from .exceptions import MissingCardArgs
-from .pay_dto import PaymentDto
+from payment_manager.api.util.pay_dto import PaymentDto
 
 api = PaymentDto.api
 _payment = PaymentDto.payment
